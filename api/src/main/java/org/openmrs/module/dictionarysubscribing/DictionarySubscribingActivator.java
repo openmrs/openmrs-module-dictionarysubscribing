@@ -16,35 +16,28 @@ package org.openmrs.module.dictionarysubscribing;
 
 import org.apache.commons.logging.Log; 
 import org.apache.commons.logging.LogFactory;
-import org.openmrs.module.BaseModuleActivator;
-import org.openmrs.module.ModuleActivator;
+import org.openmrs.module.Activator;
 
 /**
  * This class contains the logic that is run every time this module is either started or stopped.
  */
-public class DictionarySubscribingActivator extends BaseModuleActivator {
+public class DictionarySubscribingActivator implements Activator {
 	
 	protected Log log = LogFactory.getLog(getClass());
-
+		
 	/**
-	 * @see ModuleActivator#willStart()
+	 * @see Activator#startup()
 	 */
-	public void willStart() {
-		log.info("Starting Dictionary Subscribing Module");
+	public void startup() {
+		log.info("Starting Dictionary Publishing Module");
 	}
 	
 	/**
-	 * @see ModuleActivator#started()
+	 * @see Activator#shutdown()
 	 */
-	public void started() {
-		log.info("Dictionary Subscribing Module started");
+	public void shutdown() {
+		log.info("Shutting down Dictionary Publishing Module");
 	}
-
-	/**
-	 * @see ModuleActivator#stopped()
-	 */
-	public void stopped() {
-		log.info("Dictionary Subscribing Module stopped");
-	}
+	
 		
 }
