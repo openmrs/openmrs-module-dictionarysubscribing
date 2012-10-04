@@ -15,6 +15,7 @@ package org.openmrs.module.dictionarysubscribing.api;
 
 import org.openmrs.api.OpenmrsService;
 import org.openmrs.module.metadatasharing.ImportedPackage;
+import org.openmrs.module.metadatasharing.subscription.SubscriptionHeader;
 
 /**
  * Contains public API methods related to subscribing to a remote concept dictionary and getting
@@ -31,4 +32,10 @@ public interface DictionarySubscribingService extends OpenmrsService {
 	 */
 	public void subscribeToDictionary(String subscriptionUrl);
 	
+	/**
+	 * Checks if there are any updates to the concept dictionary that was subscribed to
+	 * 
+	 * @return {@link SubscriptionHeader}
+	 */
+	public void checkForUpdates();
 }
