@@ -25,6 +25,7 @@ import org.openmrs.module.dictionarysubscribing.DictionarySubscribingConstants;
 import org.openmrs.module.dictionarysubscribing.api.DictionarySubscribingService;
 import org.openmrs.module.dictionarysubscribing.api.db.DictionarySubscribingDAO;
 import org.openmrs.module.metadatasharing.ImportedPackage;
+import org.openmrs.module.metadatasharing.SubscriptionStatus;
 import org.openmrs.module.metadatasharing.api.MetadataSharingService;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -88,6 +89,8 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 		}
 		
 		as.saveGlobalProperty(groupUuidGP);
+		if (pack.getSubscriptionStatus() != SubscriptionStatus.NEVER_CHECKED)
+			checkForUpdates();
 	}
 	
 	/**

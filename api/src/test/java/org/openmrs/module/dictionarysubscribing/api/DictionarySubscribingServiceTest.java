@@ -20,6 +20,8 @@ import org.junit.Test;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.dictionarysubscribing.DictionarySubscribingConstants;
+import org.openmrs.module.metadatasharing.ImportedPackage;
+import org.openmrs.module.metadatasharing.SubscriptionStatus;
 import org.openmrs.module.metadatasharing.api.MetadataSharingService;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
 import org.openmrs.test.Verifies;
@@ -49,8 +51,10 @@ public class DictionarySubscribingServiceTest extends BaseModuleContextSensitive
 		Context.getService(DictionarySubscribingService.class).subscribeToDictionary(TEST_URL);
 		groupUuid = as.getGlobalProperty(DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID);
 		Assert.assertNotNull(groupUuid);
-		Assert.assertEquals(TEST_URL, Context.getService(MetadataSharingService.class).getImportedPackageByGroup(groupUuid)
-		        .getSubscriptionUrl());
+		ImportedPackage importedPackage = Context.getService(MetadataSharingService.class).getImportedPackageByGroup(
+		    groupUuid);
+		Assert.assertEquals(TEST_URL, importedPackage.getSubscriptionUrl());
+		Assert.assertFalse(SubscriptionStatus.DISABLED == importedPackage.getSubscriptionStatus());
 	}
 	
 	/**
