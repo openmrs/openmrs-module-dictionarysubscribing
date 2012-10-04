@@ -13,6 +13,7 @@
  */
 package org.openmrs.module.dictionarysubscribing.api.impl;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.GlobalProperty;
@@ -87,5 +88,23 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 		}
 		
 		as.saveGlobalProperty(groupUuidGP);
+	}
+	
+	/**
+	 * @see org.openmrs.module.dictionarysubscribing.api.DictionarySubscribingService#checkForUpdates()
+	 */
+	@Override
+	public void checkForUpdates() {
+		String groupUuid = Context.getAdministrationService().getGlobalProperty(
+		    DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID);
+		if (StringUtils.isBlank(groupUuid)) {
+			log.warn("There is no concept dictionary that is currently subscribed to");
+			return;
+		}
+		
+		MetadataSharingService mss = Context.getService(MetadataSharingService.class);
+		ImportedPackage importedPackage = mss.getImportedPackageByGroup(groupUuid);
+		if (importedPackage != null)
+			mss.getSubscriptionUpdater().checkForUpdates(importedPackage);
 	}
 }
