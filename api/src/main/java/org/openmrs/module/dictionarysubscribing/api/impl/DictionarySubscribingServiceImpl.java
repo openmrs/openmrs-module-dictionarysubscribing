@@ -16,6 +16,7 @@ package org.openmrs.module.dictionarysubscribing.api.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.GlobalProperty;
+import org.openmrs.api.APIException;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.impl.BaseOpenmrsService;
@@ -56,24 +57,31 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 	@Override
 	public void subscribeToDictionary(String subscriptionUrl) {
 		GlobalProperty groupUuid = Context.getAdministrationService().getGlobalPropertyObject(
-		    DictionarySubscribingConstants.GP_DICTIONARY_GROUP_UUID);
+		    DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID);
 		MetadataSharingService mss = Context.getService(MetadataSharingService.class);
-		if (groupUuid != null && mss.getImportedPackageByGroup(groupUuid.getPropertyValue()) != null) {
-			log.warn("Cannot subcribe multiple times to the same dictionary");
-			return;
+		if (groupUuid != null) {
+			ImportedPackage importedPackage = mss.getImportedPackageByGroup(groupUuid.getPropertyValue());
+			if (importedPackage != null) {
+				if (importedPackage.getSubscriptionUrl().equals(subscriptionUrl)) {
+					return;
+				} else {
+					throw new APIException("Cannot subcribe to multiple dictionaries");
+				}
+			}
 		}
 		
 		ImportedPackage pack = new ImportedPackage();
 		pack.setName("Package");
-		pack.setDescription("Contains concepts ");
+		pack.setDescription("Contains concepts");
 		pack.setSubscriptionUrl(subscriptionUrl);
 		mss.saveImportedPackage(pack);
 		
 		AdministrationService as = Context.getAdministrationService();
-		GlobalProperty groupUuidGP = as.getGlobalPropertyObject(DictionarySubscribingConstants.GP_DICTIONARY_GROUP_UUID);
+		GlobalProperty groupUuidGP = as
+		        .getGlobalPropertyObject(DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID);
 		if (groupUuidGP == null) {
-			groupUuidGP = new GlobalProperty(DictionarySubscribingConstants.GP_DICTIONARY_GROUP_UUID, pack.getGroupUuid(),
-			        "The group uuid of package associated to the concept dictionary that is currently subscribed to");
+			groupUuidGP = new GlobalProperty(DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID,
+			        pack.getGroupUuid(), "The group UUID of a dictionary package which you are currently subscribing");
 		} else {
 			groupUuidGP.setPropertyValue(pack.getGroupUuid());
 		}

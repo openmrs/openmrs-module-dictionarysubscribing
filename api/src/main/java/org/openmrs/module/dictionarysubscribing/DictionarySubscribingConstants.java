@@ -18,6 +18,6 @@ package org.openmrs.module.dictionarysubscribing;
  */
 public final class DictionarySubscribingConstants {
 	
-	public static final String GP_DICTIONARY_GROUP_UUID = "conceptpublishing.dictionaryGroupUuid";
+	public static final String GP_DICTIONARY_PACKAGE_GROUP_UUID = "conceptpublishing.dictionaryPackageGroupUuid";
 	
 }

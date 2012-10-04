@@ -31,9 +31,9 @@
 	
 	<!-- Global properties -->
 	<globalProperty>
-		<property>${project.parent.artifactId}.dictionaryGroupUuid</property>
+		<property>${project.parent.artifactId}.dictionaryPackageGroupUuid</property>
 		<defaultValue></defaultValue>
-		<description>The group uuid of package associated to the concept dictionary that is currently subscribed to</description>
+		<description>The group UUID of a dictionary package which you are currently subscribing</description>
 	</globalProperty>
 	
 	<!-- Adds link to admin page -->
