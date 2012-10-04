@@ -14,14 +14,21 @@
 package org.openmrs.module.dictionarysubscribing.api;
 
 import org.openmrs.api.OpenmrsService;
-import org.springframework.transaction.annotation.Transactional;
+import org.openmrs.module.metadatasharing.ImportedPackage;
 
 /**
- * Contains public API methods related to subscribing to a remote concept dictionary and getting periodic updates
+ * Contains public API methods related to subscribing to a remote concept dictionary and getting
+ * periodic updates
  */
-@Transactional
 public interface DictionarySubscribingService extends OpenmrsService {
-
-    // we do not have any service methods yet
-
+	
+	/**
+	 * Creates an {@link ImportedPackage} with the specified url and saves it to the database
+	 * 
+	 * @param subscriptionUrl
+	 * @should subscribe to the dictionary at the specified url
+	 * @should not create multiple subscriptions to the dictionary at the same url
+	 */
+	public void subscribeToDictionary(String subscriptionUrl);
+	
 }

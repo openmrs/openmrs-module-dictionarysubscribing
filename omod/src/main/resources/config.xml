@@ -29,6 +29,12 @@
 	<!-- Module Activator -->
 	<activator>${project.parent.groupId}.${project.parent.artifactId}.DictionarySubscribingActivator</activator>
 	
+	<!-- Global properties -->
+	<globalProperty>
+		<property>${project.parent.artifactId}.dictionaryGroupUuid</property>
+		<defaultValue></defaultValue>
+		<description>The group uuid of package associated to the concept dictionary that is currently subscribed to</description>
+	</globalProperty>
 	
 	<!-- Adds link to admin page -->
 	<extension>
