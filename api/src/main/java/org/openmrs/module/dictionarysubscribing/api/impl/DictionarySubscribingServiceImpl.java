@@ -24,6 +24,7 @@ import org.openmrs.module.dictionarysubscribing.DictionarySubscribingConstants;
 import org.openmrs.module.dictionarysubscribing.api.DictionarySubscribingService;
 import org.openmrs.module.dictionarysubscribing.api.db.DictionarySubscribingDAO;
 import org.openmrs.module.metadatasharing.ImportedPackage;
+import org.openmrs.module.metadatasharing.SubscriptionStatus;
 import org.openmrs.module.metadatasharing.api.MetadataSharingService;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -87,5 +88,25 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 		}
 		
 		as.saveGlobalProperty(groupUuidGP);
+	}
+	
+	/**
+	 * @see org.openmrs.module.dictionarysubscribing.api.DictionarySubscribingService#unsubscribeFromDictionary(java.lang.String)
+	 */
+	@Override
+	public void unsubscribeFromDictionary(String subscriptionUrl) {
+		GlobalProperty groupUuid = Context.getAdministrationService().getGlobalPropertyObject(
+		    DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID);
+		if (groupUuid != null) {
+			MetadataSharingService mss = Context.getService(MetadataSharingService.class);
+			ImportedPackage importedPackage = mss.getImportedPackageByGroup(groupUuid.getPropertyValue());
+			if (importedPackage != null && importedPackage.getSubscriptionUrl().equals(subscriptionUrl)) {
+				importedPackage.setSubscriptionStatus(SubscriptionStatus.DISABLED);
+				mss.saveImportedPackage(importedPackage);
+				
+				groupUuid.setPropertyValue("");
+				Context.getAdministrationService().saveGlobalProperty(groupUuid);
+			}
+		}
 	}
 }
