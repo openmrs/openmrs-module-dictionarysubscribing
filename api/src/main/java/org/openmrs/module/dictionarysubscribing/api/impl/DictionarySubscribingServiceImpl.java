@@ -13,15 +13,23 @@
  */
 package org.openmrs.module.dictionarysubscribing.api.impl;
 
-import org.openmrs.api.impl.BaseOpenmrsService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openmrs.GlobalProperty;
+import org.openmrs.api.AdministrationService;
+import org.openmrs.api.context.Context;
+import org.openmrs.api.impl.BaseOpenmrsService;
+import org.openmrs.module.dictionarysubscribing.DictionarySubscribingConstants;
 import org.openmrs.module.dictionarysubscribing.api.DictionarySubscribingService;
 import org.openmrs.module.dictionarysubscribing.api.db.DictionarySubscribingDAO;
+import org.openmrs.module.metadatasharing.ImportedPackage;
+import org.openmrs.module.metadatasharing.api.MetadataSharingService;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Default implementation of {@link DictionarySubscribingService}.
  */
+@Transactional
 public class DictionarySubscribingServiceImpl extends BaseOpenmrsService implements DictionarySubscribingService {
 	
 	protected final Log log = LogFactory.getLog(this.getClass());
@@ -29,16 +37,47 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 	private DictionarySubscribingDAO dao;
 	
 	/**
-     * @param dao the dao to set
-     */
-    public void setDao(DictionarySubscribingDAO dao) {
-	    this.dao = dao;
-    }
-    
-    /**
-     * @return the dao
-     */
-    public DictionarySubscribingDAO getDao() {
-	    return dao;
-    }
+	 * @param dao the dao to set
+	 */
+	public void setDao(DictionarySubscribingDAO dao) {
+		this.dao = dao;
+	}
+	
+	/**
+	 * @return the dao
+	 */
+	public DictionarySubscribingDAO getDao() {
+		return dao;
+	}
+	
+	/**
+	 * @see org.openmrs.module.dictionarysubscribing.api.DictionarySubscribingService#subscribeToDictionary(java.lang.String)
+	 */
+	@Override
+	public void subscribeToDictionary(String subscriptionUrl) {
+		GlobalProperty groupUuid = Context.getAdministrationService().getGlobalPropertyObject(
+		    DictionarySubscribingConstants.GP_DICTIONARY_GROUP_UUID);
+		MetadataSharingService mss = Context.getService(MetadataSharingService.class);
+		if (groupUuid != null && mss.getImportedPackageByGroup(groupUuid.getPropertyValue()) != null) {
+			log.warn("Cannot subcribe multiple times to the same dictionary");
+			return;
+		}
+		
+		ImportedPackage pack = new ImportedPackage();
+		pack.setName("Package");
+		pack.setDescription("Contains concepts ");
+		pack.setSubscriptionUrl(subscriptionUrl);
+		mss.saveImportedPackage(pack);
+		
+		AdministrationService as = Context.getAdministrationService();
+		GlobalProperty groupUuidGP = as.getGlobalPropertyObject(DictionarySubscribingConstants.GP_DICTIONARY_GROUP_UUID);
+		if (groupUuidGP == null) {
+			groupUuidGP = new GlobalProperty(DictionarySubscribingConstants.GP_DICTIONARY_GROUP_UUID, pack.getGroupUuid(),
+			        "The group uuid of package associated to the concept dictionary that is currently subscribed to");
+		} else {
+			groupUuidGP.setPropertyValue(pack.getGroupUuid());
+		}
+		
+		as.saveGlobalProperty(groupUuidGP);
+	}
 }
