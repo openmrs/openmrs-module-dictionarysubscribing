@@ -17,7 +17,6 @@ import static org.junit.Assert.assertNotNull;
 import junit.framework.Assert;
 
 import org.junit.Test;
-import org.openmrs.api.APIException;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.dictionarysubscribing.DictionarySubscribingConstants;
@@ -73,7 +72,8 @@ public class DictionarySubscribingServiceTest extends BaseModuleContextSensitive
 		
 		dss.subscribeToDictionary(TEST_URL);
 		//The uuid should have remained the same and no new import package created
-		Assert.assertTrue(groupUuid.equals(as.getGlobalProperty(DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID)));
+		Assert.assertTrue(groupUuid.equals(as
+		        .getGlobalProperty(DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID)));
 		Assert.assertEquals(importPackagesCount, mss.getAllImportedPackages().size());
 	}
 }
