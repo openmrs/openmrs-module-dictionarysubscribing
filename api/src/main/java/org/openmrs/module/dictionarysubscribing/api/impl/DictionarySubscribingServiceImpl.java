@@ -111,6 +111,21 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 			mss.getSubscriptionUpdater().checkForUpdates(importedPackage);
 	}
 	
+	@Override
+	public ImportedPackage getSubscribedDictionary(){
+		String groupUuid = Context.getAdministrationService().getGlobalProperty(
+			    DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID);
+			if (StringUtils.isBlank(groupUuid)) {
+				log.warn("There is no concept dictionary that is currently subscribed to");
+				return null;
+			}
+			
+			MetadataSharingService mss = Context.getService(MetadataSharingService.class);
+			ImportedPackage importedPackage = mss.getImportedPackageByGroup(groupUuid);
+			
+			return importedPackage;
+	}
+	
 	/**
 	 * @see org.openmrs.module.dictionarysubscribing.api.DictionarySubscribingService#unsubscribeFromDictionary(java.lang.String)
 	 */

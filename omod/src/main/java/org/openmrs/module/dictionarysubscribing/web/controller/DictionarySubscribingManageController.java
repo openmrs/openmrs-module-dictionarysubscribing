@@ -13,13 +13,18 @@
  */
 package org.openmrs.module.dictionarysubscribing.web.controller;
 
+import javax.servlet.http.HttpSession;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.dictionarysubscribing.api.DictionarySubscribingService;
+import org.openmrs.web.WebConstants;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * The main controller.
@@ -32,5 +37,23 @@ public class  DictionarySubscribingManageController {
 	@RequestMapping(value = "/module/dictionarysubscribing/manage", method = RequestMethod.GET)
 	public void manage(ModelMap model) {
 		model.addAttribute("user", Context.getAuthenticatedUser());
+		model.addAttribute("conceptCount", Context.getConceptService().getAllConcepts().size());
+	}
+	
+	@RequestMapping("/module/dictionarysubscribing/subscribed")
+	public String subscribed(@RequestParam(required=false) String url, HttpSession httpSession, ModelMap model){
+		
+		DictionarySubscribingService dss = Context.getService(DictionarySubscribingService.class);
+		
+		try {dss.subscribeToDictionary(url);}
+		catch (Exception e) {
+			httpSession.setAttribute(WebConstants.OPENMRS_ERROR_ATTR, "Unable to subscribe to url");
+			return "redirect:manage.form";
+		}
+		
+		model.addAttribute("dictionary", dss.getSubscribedDictionary());
+		model.addAttribute("url", url);
+		
+		return "";
 	}
 }

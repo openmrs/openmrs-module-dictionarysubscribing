@@ -47,4 +47,6 @@ public interface DictionarySubscribingService extends OpenmrsService {
 	 * @should not unsubscribe from the dictionary it if has a different url
 	 */
 	public void unsubscribeFromDictionary(String subscriptionUrl);
+
+	public abstract ImportedPackage getSubscribedDictionary();
 }
