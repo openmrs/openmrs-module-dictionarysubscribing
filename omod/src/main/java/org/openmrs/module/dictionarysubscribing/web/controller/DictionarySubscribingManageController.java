@@ -30,22 +30,24 @@ import org.springframework.web.bind.annotation.RequestParam;
  * The main controller.
  */
 @Controller
-public class  DictionarySubscribingManageController {
+public class DictionarySubscribingManageController {
 	
 	protected final Log log = LogFactory.getLog(getClass());
 	
-	@RequestMapping(value = "/module/dictionarysubscribing/manage", method = RequestMethod.GET)
-	public void manage(ModelMap model) {
+	@RequestMapping(value = "/module/dictionarysubscribing/subscribe", method = RequestMethod.GET)
+	public void subscribe(ModelMap model) {
 		model.addAttribute("user", Context.getAuthenticatedUser());
 		model.addAttribute("conceptCount", Context.getConceptService().getAllConcepts().size());
 	}
 	
 	@RequestMapping("/module/dictionarysubscribing/subscribed")
-	public String subscribed(@RequestParam(required=false) String url, HttpSession httpSession, ModelMap model){
+	public String subscribed(@RequestParam(required = false) String url, HttpSession httpSession, ModelMap model) {
 		
 		DictionarySubscribingService dss = Context.getService(DictionarySubscribingService.class);
 		
-		try {dss.subscribeToDictionary(url);}
+		try {
+			dss.subscribeToDictionary(url);
+		}
 		catch (Exception e) {
 			httpSession.setAttribute(WebConstants.OPENMRS_ERROR_ATTR, "Unable to subscribe to url");
 			return "redirect:manage.form";
