@@ -19,7 +19,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.dictionarysubscribing.api.DictionarySubscribingService;
+import org.openmrs.module.metadatasharing.ImportedPackage;
+import org.openmrs.module.metadatasharing.subscription.SubscriptionHeader;
+import org.openmrs.module.metadatasharing.updater.SubscriptionUpdater;
 import org.openmrs.web.WebConstants;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,17 +49,16 @@ public class DictionarySubscribingManageController {
 		
 		DictionarySubscribingService dss = Context.getService(DictionarySubscribingService.class);
 		
-		try {
-			dss.subscribeToDictionary(url);
-		}
-		catch (Exception e) {
-			httpSession.setAttribute(WebConstants.OPENMRS_ERROR_ATTR, "Unable to subscribe to url");
-			return "redirect:manage.form";
+		dss.subscribeToDictionary(url);
+		
+		ImportedPackage importedPackage = dss.getSubscribedDictionary();
+		if(importedPackage.hasSubscriptionErrors()){
+			httpSession.setAttribute(WebConstants.OPENMRS_ERROR_ATTR, "Unable to subscribe to url: "+importedPackage.getSubscriptionStatus());
 		}
 		
 		model.addAttribute("dictionary", dss.getSubscribedDictionary());
 		model.addAttribute("url", url);
 		
-		return "";
+		return null;
 	}
 }

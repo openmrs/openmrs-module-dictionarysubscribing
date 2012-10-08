@@ -13,6 +13,8 @@
  */
 package org.openmrs.module.dictionarysubscribing.api.impl;
 
+import java.util.UUID;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,8 +27,11 @@ import org.openmrs.module.dictionarysubscribing.DictionarySubscribingConstants;
 import org.openmrs.module.dictionarysubscribing.api.DictionarySubscribingService;
 import org.openmrs.module.dictionarysubscribing.api.db.DictionarySubscribingDAO;
 import org.openmrs.module.metadatasharing.ImportedPackage;
+import org.openmrs.module.metadatasharing.MetadataSharing;
 import org.openmrs.module.metadatasharing.SubscriptionStatus;
 import org.openmrs.module.metadatasharing.api.MetadataSharingService;
+import org.openmrs.module.metadatasharing.updater.SubscriptionUpdater;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -38,6 +43,9 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 	protected final Log log = LogFactory.getLog(this.getClass());
 	
 	private DictionarySubscribingDAO dao;
+	
+	@Autowired
+	private SubscriptionUpdater updater;
 	
 	/**
 	 * @param dao the dao to set
@@ -73,10 +81,14 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 		}
 		
 		ImportedPackage pack = new ImportedPackage();
-		pack.setName("Package");
-		pack.setDescription("Contains concepts");
 		pack.setSubscriptionUrl(subscriptionUrl);
-		mss.saveImportedPackage(pack);
+		pack.setGroupUuid(null);
+		updater.checkForUpdates(pack);
+		
+		if(pack.getGroupUuid()==null){
+			pack.setGroupUuid(UUID.randomUUID().toString());
+		}
+		MetadataSharing.getService().saveImportedPackage(pack);
 		
 		AdministrationService as = Context.getAdministrationService();
 		GlobalProperty groupUuidGP = as
@@ -89,8 +101,6 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 		}
 		
 		as.saveGlobalProperty(groupUuidGP);
-		if (pack.getSubscriptionStatus() != SubscriptionStatus.NEVER_CHECKED)
-			checkForUpdates();
 	}
 	
 	/**
