@@ -17,7 +17,7 @@ Proceed at your own risk!</p>
   <legend>Subscribe to an external concept dictionary</legend>
   URL: <input type="text" name="url"><br>
  <input type="submit" value="Subscribe"
- onClick="if(confirm('You are about to subscribe to concept dictionary at '))
+ onClick="if(confirm('You are about to subscribe to concept dictionary.'))
  return true;
  else return false"/>
  </fieldset>

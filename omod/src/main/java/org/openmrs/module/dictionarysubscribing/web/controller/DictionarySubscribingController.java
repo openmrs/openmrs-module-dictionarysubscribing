@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RequestParam;
  * The main controller.
  */
 @Controller
-public class DictionarySubscribingManageController {
+public class DictionarySubscribingController {
 	
 	protected final Log log = LogFactory.getLog(getClass());
 	
