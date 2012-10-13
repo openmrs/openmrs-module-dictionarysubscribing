@@ -13,11 +13,16 @@
  */
 package org.openmrs.module.dictionarysubscribing.api.impl;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.SessionFactory;
 import org.openmrs.GlobalProperty;
 import org.openmrs.api.APIException;
 import org.openmrs.api.AdministrationService;
@@ -26,11 +31,17 @@ import org.openmrs.api.impl.BaseOpenmrsService;
 import org.openmrs.module.dictionarysubscribing.DictionarySubscribingConstants;
 import org.openmrs.module.dictionarysubscribing.api.DictionarySubscribingService;
 import org.openmrs.module.dictionarysubscribing.api.db.DictionarySubscribingDAO;
+import org.openmrs.module.metadatasharing.ImportConfig;
+import org.openmrs.module.metadatasharing.ImportMode;
 import org.openmrs.module.metadatasharing.ImportedPackage;
 import org.openmrs.module.metadatasharing.MetadataSharing;
 import org.openmrs.module.metadatasharing.SubscriptionStatus;
 import org.openmrs.module.metadatasharing.api.MetadataSharingService;
+import org.openmrs.module.metadatasharing.downloader.Downloader;
+import org.openmrs.module.metadatasharing.downloader.DownloaderFactory;
+import org.openmrs.module.metadatasharing.subscription.SubscriptionHeader;
 import org.openmrs.module.metadatasharing.updater.SubscriptionUpdater;
+import org.openmrs.module.metadatasharing.wrapper.PackageImporter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,6 +57,12 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 	
 	@Autowired
 	private SubscriptionUpdater updater;
+	
+	@Autowired
+	private DownloaderFactory downloaderFactory;
+	
+	@Autowired
+	private SessionFactory sessionFactory;
 	
 	/**
 	 * @param dao the dao to set
@@ -85,7 +102,7 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 		pack.setGroupUuid(null);
 		updater.checkForUpdates(pack);
 		
-		if(pack.getGroupUuid()==null){
+		if (pack.getGroupUuid() == null) {
 			pack.setGroupUuid(UUID.randomUUID().toString());
 		}
 		MetadataSharing.getService().saveImportedPackage(pack);
@@ -122,18 +139,18 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 	}
 	
 	@Override
-	public ImportedPackage getSubscribedDictionary(){
+	public ImportedPackage getSubscribedDictionary() {
 		String groupUuid = Context.getAdministrationService().getGlobalProperty(
-			    DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID);
-			if (StringUtils.isBlank(groupUuid)) {
-				log.warn("There is no concept dictionary that is currently subscribed to");
-				return null;
-			}
-			
-			MetadataSharingService mss = Context.getService(MetadataSharingService.class);
-			ImportedPackage importedPackage = mss.getImportedPackageByGroup(groupUuid);
-			
-			return importedPackage;
+		    DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID);
+		if (StringUtils.isBlank(groupUuid)) {
+			log.warn("There is no concept dictionary that is currently subscribed to");
+			return null;
+		}
+		
+		MetadataSharingService mss = Context.getService(MetadataSharingService.class);
+		ImportedPackage importedPackage = mss.getImportedPackageByGroup(groupUuid);
+		
+		return importedPackage;
 	}
 	
 	/**
@@ -153,6 +170,55 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 				groupUuid.setPropertyValue("");
 				Context.getAdministrationService().saveGlobalProperty(groupUuid);
 			}
+		}
+	}
+	
+	/**
+	 * @see org.openmrs.module.dictionarysubscribing.api.DictionarySubscribingService#importDictionaryUpdates()
+	 */
+	@Override
+	public void importDictionaryUpdates() throws APIException {
+		ImportedPackage dictionary = getSubscribedDictionary();
+		SubscriptionHeader header = updater.getSubscriptionHeader(dictionary);
+		if (!dictionary.hasSubscriptionErrors()) {
+			if (!dictionary.isImported() || dictionary.getRemoteVersion().compareTo(dictionary.getVersion()) > 0) {
+				int version = dictionary.getVersion();
+				if (dictionary.isImported()) {
+					version++;
+				}
+				for (; version <= dictionary.getRemoteVersion(); version++) {
+					URL packageContentUrl = getContentUrl(dictionary, header, version);
+					importPackage(packageContentUrl);
+				}
+			}
+		}
+	}
+	
+	private void importPackage(URL packageContentUrl) {
+		PackageImporter importer = MetadataSharing.getInstance().newPackageImporter();
+		try {
+			Downloader downloader = downloaderFactory.getDownloader(packageContentUrl);
+			byte[] zippedPackage = downloader.downloadAsByteArray();
+			importer.loadSerializedPackageStream(new ByteArrayInputStream(zippedPackage));
+		}
+		catch (IOException e) {
+			throw new APIException(e);
+		}
+		
+		importer.setImportConfig(ImportConfig.valueOf(ImportMode.MIRROR));
+		importer.importPackage();
+	}
+	
+	private URL getContentUrl(ImportedPackage dictionary, SubscriptionHeader header, Integer version) {
+		try {
+			URL url = new URL(new URL(dictionary.getSubscriptionUrl()), "ws/rest/metadatasharing/package/"
+			        + header.getContentUri().toString().substring(3));
+			URL downloadURL = new URL(url, "../" + version + "/download.form");
+			
+			return downloadURL;
+		}
+		catch (MalformedURLException e) {
+			throw new APIException();
 		}
 	}
 }

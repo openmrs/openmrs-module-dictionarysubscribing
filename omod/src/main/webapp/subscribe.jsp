@@ -12,7 +12,7 @@ consistent with these concepts may cause serious errors.
 Proceed at your own risk!</p>
 </c:if>
 
-<form action="subscribed.form" method="POST">
+<form action="subscribe.form" method="POST">
  <fieldset>
   <legend>Subscribe to an external concept dictionary</legend>
   URL: <input type="text" name="url"><br>

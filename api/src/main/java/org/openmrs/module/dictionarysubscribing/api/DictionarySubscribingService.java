@@ -13,6 +13,7 @@
  */
 package org.openmrs.module.dictionarysubscribing.api;
 
+import org.openmrs.api.APIException;
 import org.openmrs.api.OpenmrsService;
 import org.openmrs.module.metadatasharing.ImportedPackage;
 import org.openmrs.module.metadatasharing.subscription.SubscriptionHeader;
@@ -40,6 +41,12 @@ public interface DictionarySubscribingService extends OpenmrsService {
 	public void checkForUpdates();
 	
 	/**
+	 * Imports the latest dictionary. It tries to fetch packages from the currently imported version
+	 * to the latest version.
+	 */
+	public void importDictionaryUpdates() throws APIException;
+	
+	/**
 	 * Unsubscribe from a dictionary at the specified url
 	 * 
 	 * @param subscriptionUrl
@@ -47,6 +54,6 @@ public interface DictionarySubscribingService extends OpenmrsService {
 	 * @should not unsubscribe from the dictionary it if has a different url
 	 */
 	public void unsubscribeFromDictionary(String subscriptionUrl);
-
+	
 	public abstract ImportedPackage getSubscribedDictionary();
 }
