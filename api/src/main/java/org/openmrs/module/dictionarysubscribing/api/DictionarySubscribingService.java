@@ -56,4 +56,11 @@ public interface DictionarySubscribingService extends OpenmrsService {
 	public void unsubscribeFromDictionary(String subscriptionUrl);
 	
 	public abstract ImportedPackage getSubscribedDictionary();
+
+	/**
+     * Indicates whether dictionary is locked for edits or not
+     * 
+     * @return true if locked
+     */
+    public boolean isDictionaryLocked();
 }

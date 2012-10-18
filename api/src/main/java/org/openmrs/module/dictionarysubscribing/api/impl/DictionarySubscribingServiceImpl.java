@@ -35,13 +35,13 @@ import org.openmrs.module.metadatasharing.ImportConfig;
 import org.openmrs.module.metadatasharing.ImportMode;
 import org.openmrs.module.metadatasharing.ImportedPackage;
 import org.openmrs.module.metadatasharing.MetadataSharing;
-import org.openmrs.module.metadatasharing.SubscriptionStatus;
 import org.openmrs.module.metadatasharing.api.MetadataSharingService;
 import org.openmrs.module.metadatasharing.downloader.Downloader;
 import org.openmrs.module.metadatasharing.downloader.DownloaderFactory;
 import org.openmrs.module.metadatasharing.subscription.SubscriptionHeader;
 import org.openmrs.module.metadatasharing.updater.SubscriptionUpdater;
 import org.openmrs.module.metadatasharing.wrapper.PackageImporter;
+import org.openmrs.util.OpenmrsConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -78,16 +78,25 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 		return dao;
 	}
 	
+	public AdministrationService getAS() {
+		return Context.getAdministrationService();
+	}
+	
+	public MetadataSharingService getMSS() {
+		return Context.getService(MetadataSharingService.class);
+	}
+	
 	/**
 	 * @see org.openmrs.module.dictionarysubscribing.api.DictionarySubscribingService#subscribeToDictionary(java.lang.String)
 	 */
 	@Override
 	public void subscribeToDictionary(String subscriptionUrl) {
-		GlobalProperty groupUuid = Context.getAdministrationService().getGlobalPropertyObject(
+		GlobalProperty groupUuid = getAS().getGlobalPropertyObject(
 		    DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID);
-		MetadataSharingService mss = Context.getService(MetadataSharingService.class);
+		
 		if (groupUuid != null) {
-			ImportedPackage importedPackage = mss.getImportedPackageByGroup(groupUuid.getPropertyValue());
+			ImportedPackage importedPackage = getMSS().getImportedPackageByGroup(groupUuid.getPropertyValue());
+			
 			if (importedPackage != null) {
 				if (importedPackage.getSubscriptionUrl().equals(subscriptionUrl)) {
 					return;
@@ -97,19 +106,22 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 			}
 		}
 		
+		//Check for updates
 		ImportedPackage pack = new ImportedPackage();
 		pack.setSubscriptionUrl(subscriptionUrl);
+		pack.setVersion(null);
 		pack.setGroupUuid(null);
 		updater.checkForUpdates(pack);
 		
 		if (pack.getGroupUuid() == null) {
 			pack.setGroupUuid(UUID.randomUUID().toString());
 		}
-		MetadataSharing.getService().saveImportedPackage(pack);
 		
-		AdministrationService as = Context.getAdministrationService();
-		GlobalProperty groupUuidGP = as
-		        .getGlobalPropertyObject(DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID);
+		getMSS().saveImportedPackage(pack);
+		
+		//Save dictionary groupUuid
+		GlobalProperty groupUuidGP = getAS().getGlobalPropertyObject(
+		    DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID);
 		if (groupUuidGP == null) {
 			groupUuidGP = new GlobalProperty(DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID,
 			        pack.getGroupUuid(), "The group UUID of a dictionary package which you are currently subscribing");
@@ -117,7 +129,9 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 			groupUuidGP.setPropertyValue(pack.getGroupUuid());
 		}
 		
-		as.saveGlobalProperty(groupUuidGP);
+		getAS().saveGlobalProperty(groupUuidGP);
+		
+		lockDictionary();
 	}
 	
 	/**
@@ -128,14 +142,13 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 		String groupUuid = Context.getAdministrationService().getGlobalProperty(
 		    DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID);
 		if (StringUtils.isBlank(groupUuid)) {
-			log.warn("There is no concept dictionary that is currently subscribed to");
+			log.warn("There is no concept dictionary that you is currently subscribed");
 			return;
 		}
 		
-		MetadataSharingService mss = Context.getService(MetadataSharingService.class);
-		ImportedPackage importedPackage = mss.getImportedPackageByGroup(groupUuid);
+		ImportedPackage importedPackage = getMSS().getImportedPackageByGroup(groupUuid);
 		if (importedPackage != null)
-			mss.getSubscriptionUpdater().checkForUpdates(importedPackage);
+			getMSS().getSubscriptionUpdater().checkForUpdates(importedPackage);
 	}
 	
 	@Override
@@ -143,12 +156,11 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 		String groupUuid = Context.getAdministrationService().getGlobalProperty(
 		    DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID);
 		if (StringUtils.isBlank(groupUuid)) {
-			log.warn("There is no concept dictionary that is currently subscribed to");
+			log.warn("There is no concept dictionary that is currently subscribed");
 			return null;
 		}
 		
-		MetadataSharingService mss = Context.getService(MetadataSharingService.class);
-		ImportedPackage importedPackage = mss.getImportedPackageByGroup(groupUuid);
+		ImportedPackage importedPackage = getMSS().getImportedPackageByGroup(groupUuid);
 		
 		return importedPackage;
 	}
@@ -160,12 +172,12 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 	public void unsubscribeFromDictionary(String subscriptionUrl) {
 		GlobalProperty groupUuid = Context.getAdministrationService().getGlobalPropertyObject(
 		    DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID);
+		
 		if (groupUuid != null) {
-			MetadataSharingService mss = Context.getService(MetadataSharingService.class);
-			ImportedPackage importedPackage = mss.getImportedPackageByGroup(groupUuid.getPropertyValue());
+			ImportedPackage importedPackage = getMSS().getImportedPackageByGroup(groupUuid.getPropertyValue());
+			
 			if (importedPackage != null && importedPackage.getSubscriptionUrl().equals(subscriptionUrl)) {
-				importedPackage.setSubscriptionStatus(SubscriptionStatus.DISABLED);
-				mss.saveImportedPackage(importedPackage);
+				getMSS().deleteImportedPackage(importedPackage);
 				
 				groupUuid.setPropertyValue("");
 				Context.getAdministrationService().saveGlobalProperty(groupUuid);
@@ -180,22 +192,31 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 	public void importDictionaryUpdates() throws APIException {
 		ImportedPackage dictionary = getSubscribedDictionary();
 		SubscriptionHeader header = updater.getSubscriptionHeader(dictionary);
+		
 		if (!dictionary.hasSubscriptionErrors()) {
 			if (!dictionary.isImported() || dictionary.getRemoteVersion().compareTo(dictionary.getVersion()) > 0) {
-				int version = dictionary.getVersion();
-				if (dictionary.isImported()) {
-					version++;
-				}
+				int version = (dictionary.getVersion() != null) ? dictionary.getVersion() : 0;
+				version++;
+				
 				for (; version <= dictionary.getRemoteVersion(); version++) {
 					URL packageContentUrl = getContentUrl(dictionary, header, version);
-					importPackage(packageContentUrl);
+					
+					importPackage(dictionary, packageContentUrl);
+					
+					dictionary = getMSS().getImportedPackageByGroup(dictionary.getGroupUuid());
+					updater.checkForUpdates(dictionary);
 				}
 			}
 		}
 	}
 	
-	private void importPackage(URL packageContentUrl) {
+	private void importPackage(ImportedPackage dictionary, URL packageContentUrl) {
+		//Preserve subscription URL
+		String subscriptionUrl = dictionary.getSubscriptionUrl();
+		
 		PackageImporter importer = MetadataSharing.getInstance().newPackageImporter();
+		importer.getImportedPackage().setId(dictionary.getId());
+		Context.evictFromSession(dictionary); //evict so that it can be overwritten
 		try {
 			Downloader downloader = downloaderFactory.getDownloader(packageContentUrl);
 			byte[] zippedPackage = downloader.downloadAsByteArray();
@@ -206,7 +227,16 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 		}
 		
 		importer.setImportConfig(ImportConfig.valueOf(ImportMode.MIRROR));
+		
+		unlockDictionary();
+		
 		importer.importPackage();
+		
+		importer.getImportedPackage().setSubscriptionUrl(subscriptionUrl);
+		
+		getMSS().saveImportedPackage(importer.getImportedPackage());
+		
+		lockDictionary();
 	}
 	
 	private URL getContentUrl(ImportedPackage dictionary, SubscriptionHeader header, Integer version) {
@@ -220,5 +250,38 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 		catch (MalformedURLException e) {
 			throw new APIException();
 		}
+	}
+	
+	/**
+	 * @see org.openmrs.module.dictionarysubscribing.api.DictionarySubscribingService#isDictionaryLocked()
+	 */
+	@Override
+	public boolean isDictionaryLocked() {
+		String locked = getAS().getGlobalProperty(OpenmrsConstants.GLOBAL_PROPERTY_CONCEPTS_LOCKED, "false");
+		return Boolean.valueOf(locked);
+	}
+	
+	private void unlockDictionary() {
+		GlobalProperty conceptsLocked = getAS().getGlobalPropertyObject(OpenmrsConstants.GLOBAL_PROPERTY_CONCEPTS_LOCKED);
+		if (conceptsLocked == null) {
+			conceptsLocked = new GlobalProperty(OpenmrsConstants.GLOBAL_PROPERTY_CONCEPTS_LOCKED, "false",
+			        "Disables modyfications to concept dictionary");
+		} else {
+			conceptsLocked.setPropertyValue("false");
+		}
+		
+		getAS().saveGlobalProperty(conceptsLocked);
+	}
+	
+	private void lockDictionary() {
+		GlobalProperty conceptsLocked = getAS().getGlobalPropertyObject(OpenmrsConstants.GLOBAL_PROPERTY_CONCEPTS_LOCKED);
+		if (conceptsLocked == null) {
+			conceptsLocked = new GlobalProperty(OpenmrsConstants.GLOBAL_PROPERTY_CONCEPTS_LOCKED, "true",
+			        "Disables modyfications to concept dictionary");
+		} else {
+			conceptsLocked.setPropertyValue("true");
+		}
+		
+		getAS().saveGlobalProperty(conceptsLocked);
 	}
 }

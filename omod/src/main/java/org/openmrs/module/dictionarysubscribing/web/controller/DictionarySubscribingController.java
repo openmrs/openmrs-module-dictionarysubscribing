@@ -54,6 +54,12 @@ public class DictionarySubscribingController {
 		return "redirect:subscribed.form";
 	}
 	
+	@RequestMapping(value = MODULE_URL + "unsubscribe", method = RequestMethod.POST)
+	public String unsubscribe(String url) {
+		getService().unsubscribeFromDictionary(url);
+		return "redirect:subscribe.form";
+	}
+	
 	@RequestMapping(MODULE_URL + "subscribed")
 	public String subscribed(HttpSession httpSession, ModelMap model) {
 		ImportedPackage importedPackage = getService().getSubscribedDictionary();
@@ -62,6 +68,7 @@ public class DictionarySubscribingController {
 			    "Unable to subscribe to url: " + importedPackage.getSubscriptionStatus());
 		}
 		
+		model.addAttribute("locked", getService().isDictionaryLocked());
 		model.addAttribute("dictionary", getService().getSubscribedDictionary());
 		model.addAttribute("url", importedPackage.getSubscriptionUrl());
 		
@@ -75,6 +82,12 @@ public class DictionarySubscribingController {
 	@RequestMapping(value = MODULE_URL + "updateToLatestVersion", method = RequestMethod.POST)
 	public String updateToLatestVersion() {
 		getService().importDictionaryUpdates();
+		return "redirect:subscribed.form";
+	}
+	
+	@RequestMapping(value = MODULE_URL + "checkForUpdates", method = RequestMethod.POST)
+	public String checkForUpdates() {
+		getService().checkForUpdates();
 		return "redirect:subscribed.form";
 	}
 }
