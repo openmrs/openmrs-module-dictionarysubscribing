@@ -87,10 +87,10 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 	}
 	
 	/**
-	 * @see org.openmrs.module.dictionarysubscribing.api.DictionarySubscribingService#subscribeToDictionary(java.lang.String)
+	 * @see org.openmrs.module.dictionarysubscribing.api.DictionarySubscribingService#subscribeToDictionary(java.lang.String, int)
 	 */
 	@Override
-	public void subscribeToDictionary(String subscriptionUrl) {
+	public void subscribeToDictionary(String subscriptionUrl, int version) {
 		GlobalProperty groupUuid = getAS().getGlobalPropertyObject(
 		    DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID);
 		
@@ -106,10 +106,17 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 			}
 		}
 		
+		//Start from version
+		version--;
+		
 		//Check for updates
 		ImportedPackage pack = new ImportedPackage();
 		pack.setSubscriptionUrl(subscriptionUrl);
-		pack.setVersion(null);
+		if (version == 0) {
+			pack.setVersion(null);
+		} else {
+			pack.setVersion(version);
+		}
 		pack.setGroupUuid(null);
 		updater.checkForUpdates(pack);
 		

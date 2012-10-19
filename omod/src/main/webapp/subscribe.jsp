@@ -9,19 +9,20 @@
 
 <c:if test="${conceptsCount > 0}">
 	<p style="background-color: yellow;">You already have
-		${conceptsCount} concepts in your dictionary. Trying to subscribe to an
-		external dictionary that is not consistent with these concepts may
+		${conceptsCount} concepts in your dictionary. Trying to subscribe to
+		an external dictionary that is not consistent with these concepts may
 		cause serious errors. Proceed at your own risk!</p>
 </c:if>
 
 <form action="subscribe.form" method="POST">
 	<fieldset>
 		<legend>Subscribe to an external concept dictionary</legend>
-		URL: <input type="text" name="url"><br> <input
-			type="submit" value="Subscribe"
+		URL: <input type="text" name="url" size="50">
+		 starting from version <input type="text" name="version" value="1" size="5" /><br />
+		<input type="submit" value="Subscribe"
 			onClick="if(confirm('You are about to subscribe to concept dictionary.'))
  return true;
- else return false" />
+ else return false" />	
 	</fieldset>
 </form>
 

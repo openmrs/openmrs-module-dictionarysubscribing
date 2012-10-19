@@ -28,10 +28,11 @@ public interface DictionarySubscribingService extends OpenmrsService {
 	 * Creates an {@link ImportedPackage} with the specified url and saves it to the database
 	 * 
 	 * @param subscriptionUrl
+	 * @param version from which version to start
 	 * @should subscribe to the dictionary at the specified url
 	 * @should not create multiple subscriptions to the dictionary at the same url
 	 */
-	void subscribeToDictionary(String subscriptionUrl);
+	void subscribeToDictionary(String subscriptionUrl, int version);
 	
 	/**
 	 * Checks if there are any updates to the concept dictionary that was subscribed to

@@ -49,8 +49,8 @@ public class DictionarySubscribingController {
 	}
 	
 	@RequestMapping(value = MODULE_URL + "subscribe", method = RequestMethod.POST)
-	public String subscribePOST(String url) {
-		getService().subscribeToDictionary(url);
+	public String subscribePOST(String url, Integer version) {
+		getService().subscribeToDictionary(url, version);
 		return "redirect:subscribed.form";
 	}
 	
