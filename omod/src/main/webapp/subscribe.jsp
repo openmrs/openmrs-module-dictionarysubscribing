@@ -7,9 +7,9 @@
 	You are <b>not subscribed</b> to an external concept dictionary.
 </p>
 
-<c:if test="${conceptCount > 0}">
+<c:if test="${conceptsCount > 0}">
 	<p style="background-color: yellow;">You already have
-		${conceptCount} concepts in your dictionary. Trying to subscribe to an
+		${conceptsCount} concepts in your dictionary. Trying to subscribe to an
 		external dictionary that is not consistent with these concepts may
 		cause serious errors. Proceed at your own risk!</p>
 </c:if>

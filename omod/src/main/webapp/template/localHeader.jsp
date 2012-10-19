@@ -5,10 +5,10 @@
 				code="admin.title.short" /></a></li>
 
 	<li
-		<c:if test='<%= request.getRequestURI().contains("/manage") %>'>class="active"</c:if>>
+		<c:if test='<%= request.getRequestURI().contains("/subscribe") %>'>class="active"</c:if>>
 		<a
-		href="${pageContext.request.contextPath}/module/dictionarysubscribing/manage.form"><spring:message
-				code="dictionarysubscribing.manage" /></a>
+		href="${pageContext.request.contextPath}/module/dictionarysubscribing/subscribe.form"><spring:message
+				code="dictionarysubscribing.subscribe" /></a>
 	</li>
 	
 	<!-- Add further links here -->

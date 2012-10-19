@@ -19,7 +19,11 @@ import org.openmrs.module.dictionarysubscribing.api.DictionarySubscribingService
  *  Database methods for {@link DictionarySubscribingService}.
  */
 public interface DictionarySubscribingDAO {
-	
-	// we do not have any DAO methods yet
 
+	/**
+     * Returns the count of concepts in the system
+     * 
+     * @return the count of concepts
+     */
+    Long getConceptsCount();
 }

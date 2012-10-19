@@ -41,7 +41,7 @@ public class DictionarySubscribingController {
 		ImportedPackage dictionary = getService().getSubscribedDictionary();
 		if (dictionary == null) {
 			model.addAttribute("user", Context.getAuthenticatedUser());
-			model.addAttribute("conceptCount", Context.getConceptService().getAllConcepts().size());
+			model.addAttribute("conceptsCount", getService().getConceptsCount());
 			return null;
 		} else {
 			return "redirect:subscribed.form";

@@ -31,20 +31,20 @@ public interface DictionarySubscribingService extends OpenmrsService {
 	 * @should subscribe to the dictionary at the specified url
 	 * @should not create multiple subscriptions to the dictionary at the same url
 	 */
-	public void subscribeToDictionary(String subscriptionUrl);
+	void subscribeToDictionary(String subscriptionUrl);
 	
 	/**
 	 * Checks if there are any updates to the concept dictionary that was subscribed to
 	 * 
 	 * @return {@link SubscriptionHeader}
 	 */
-	public void checkForUpdates();
+	void checkForUpdates();
 	
 	/**
 	 * Imports the latest dictionary. It tries to fetch packages from the currently imported version
 	 * to the latest version.
 	 */
-	public void importDictionaryUpdates() throws APIException;
+	void importDictionaryUpdates() throws APIException;
 	
 	/**
 	 * Unsubscribe from a dictionary at the specified url
@@ -53,14 +53,26 @@ public interface DictionarySubscribingService extends OpenmrsService {
 	 * @should unsubscribe from the dictionary at the specified url
 	 * @should not unsubscribe from the dictionary it if has a different url
 	 */
-	public void unsubscribeFromDictionary(String subscriptionUrl);
+	void unsubscribeFromDictionary(String subscriptionUrl);
 	
-	public abstract ImportedPackage getSubscribedDictionary();
+	/**
+	 * Returns a package of the subscribed dictionary or null if none
+	 * 
+	 * @return the package or null
+	 */
+	ImportedPackage getSubscribedDictionary();
 
 	/**
      * Indicates whether dictionary is locked for edits or not
      * 
      * @return true if locked
      */
-    public boolean isDictionaryLocked();
+    boolean isDictionaryLocked();
+    
+    /**
+     * Returns the count of concepts in a system
+     * 
+     * @return the count of concepts
+     */
+    Long getConceptsCount();
 }

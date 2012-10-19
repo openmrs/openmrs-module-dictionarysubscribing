@@ -16,29 +16,42 @@ package org.openmrs.module.dictionarysubscribing.api.db.hibernate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Projections;
+import org.openmrs.Concept;
 import org.openmrs.module.dictionarysubscribing.api.db.DictionarySubscribingDAO;
 
 /**
- * It is a default implementation of  {@link DictionarySubscribingDAO}.
+ * It is a default implementation of {@link DictionarySubscribingDAO}.
  */
 public class HibernateDictionarySubscribingDAO implements DictionarySubscribingDAO {
-
+	
 	protected final Log log = LogFactory.getLog(this.getClass());
 	
 	private SessionFactory sessionFactory;
 	
 	/**
-     * @param sessionFactory the sessionFactory to set
-     */
-    public void setSessionFactory(SessionFactory sessionFactory) {
-	    this.sessionFactory = sessionFactory;
-    }
-    
+	 * @param sessionFactory the sessionFactory to set
+	 */
+	public void setSessionFactory(SessionFactory sessionFactory) {
+		this.sessionFactory = sessionFactory;
+	}
+	
 	/**
-     * @return the sessionFactory
-     */
-    public SessionFactory getSessionFactory() {
-	    return sessionFactory;
-    }
-
+	 * @return the sessionFactory
+	 */
+	public SessionFactory getSessionFactory() {
+		return sessionFactory;
+	}
+	
+	/**
+	 * @see org.openmrs.module.dictionarysubscribing.api.db.DictionarySubscribingDAO#getConceptsCount()
+	 */
+	@Override
+	public Long getConceptsCount() {
+		Object result = sessionFactory.getCurrentSession().createCriteria(Concept.class)
+		        .setProjection(Projections.rowCount()).uniqueResult();
+		
+		return ((Number) result).longValue();
+	}
+	
 }

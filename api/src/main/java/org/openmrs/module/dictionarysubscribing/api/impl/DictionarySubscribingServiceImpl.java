@@ -284,4 +284,12 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 		
 		getAS().saveGlobalProperty(conceptsLocked);
 	}
+
+	/**
+     * @see org.openmrs.module.dictionarysubscribing.api.DictionarySubscribingService#getConceptsCount()
+     */
+    @Override
+    public Long getConceptsCount() {
+	    return dao.getConceptsCount();
+    }
 }
