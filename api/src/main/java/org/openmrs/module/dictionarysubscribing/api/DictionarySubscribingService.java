@@ -1,5 +1,5 @@
 /**
- * The contents of this file are subject to the OpenMRS Public License
+b * The contents of this file are subject to the OpenMRS Public License
  * Version 1.0 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://license.openmrs.org
@@ -12,6 +12,8 @@
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
 package org.openmrs.module.dictionarysubscribing.api;
+
+import java.net.URL;
 
 import org.openmrs.api.APIException;
 import org.openmrs.api.OpenmrsService;
@@ -62,18 +64,28 @@ public interface DictionarySubscribingService extends OpenmrsService {
 	 * @return the package or null
 	 */
 	ImportedPackage getSubscribedDictionary();
-
+	
 	/**
-     * Indicates whether dictionary is locked for edits or not
-     * 
-     * @return true if locked
-     */
-    boolean isDictionaryLocked();
-    
-    /**
-     * Returns the count of concepts in a system
-     * 
-     * @return the count of concepts
-     */
-    Long getConceptsCount();
+	 * Indicates whether dictionary is locked for edits or not
+	 * 
+	 * @return true if locked
+	 */
+	boolean isDictionaryLocked();
+	
+	/**
+	 * Returns the count of concepts in a system
+	 * 
+	 * @return the count of concepts
+	 */
+	Long getConceptsCount();
+	
+	/**
+	 * It's for internal use only.
+	 * <p>
+	 * It must have been put in the interface, because it needs to be transactional.
+	 * 
+	 * @param dictionary
+	 * @param packageContentUrl
+	 */
+	void importPackage(ImportedPackage dictionary, URL packageContentUrl);
 }

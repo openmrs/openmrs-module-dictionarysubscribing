@@ -22,7 +22,6 @@ import java.util.UUID;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.SessionFactory;
 import org.openmrs.GlobalProperty;
 import org.openmrs.api.APIException;
 import org.openmrs.api.AdministrationService;
@@ -59,9 +58,6 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 	
 	@Autowired
 	private DownloaderFactory downloaderFactory;
-	
-	@Autowired
-	private SessionFactory sessionFactory;
 	
 	/**
 	 * @param dao the dao to set
@@ -211,7 +207,7 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 				for (; version <= dictionary.getRemoteVersion(); version++) {
 					URL packageContentUrl = getContentUrl(dictionary, header, version);
 					
-					importPackage(dictionary, packageContentUrl);
+					getThisService().importPackage(dictionary, packageContentUrl);
 					
 					dictionary = getMSS().getImportedPackageByGroup(dictionary.getGroupUuid());
 					updater.checkForUpdates(dictionary);
@@ -220,7 +216,9 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 		}
 	}
 	
-	private void importPackage(ImportedPackage dictionary, URL packageContentUrl) {
+	@Override
+    @Transactional
+	public void importPackage(ImportedPackage dictionary, URL packageContentUrl) {
 		//Preserve subscription URL
 		String subscriptionUrl = dictionary.getSubscriptionUrl();
 		
@@ -304,4 +302,13 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
     public Long getConceptsCount() {
 	    return dao.getConceptsCount();
     }
+	
+	/**
+	 * A work-around which allows for transactional calls within this service.
+	 * 
+	 * @return this service proxy
+	 */
+	private DictionarySubscribingService getThisService() {
+		return Context.getService(DictionarySubscribingService.class);
+	}
 }
