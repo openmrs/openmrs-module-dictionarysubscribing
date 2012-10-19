@@ -48,7 +48,6 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Default implementation of {@link DictionarySubscribingService}.
  */
-@Transactional
 public class DictionarySubscribingServiceImpl extends BaseOpenmrsService implements DictionarySubscribingService {
 	
 	protected final Log log = LogFactory.getLog(this.getClass());
@@ -89,6 +88,7 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 	/**
 	 * @see org.openmrs.module.dictionarysubscribing.api.DictionarySubscribingService#subscribeToDictionary(java.lang.String, int)
 	 */
+	@Transactional
 	@Override
 	public void subscribeToDictionary(String subscriptionUrl, int version) {
 		GlobalProperty groupUuid = getAS().getGlobalPropertyObject(
@@ -144,6 +144,7 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 	/**
 	 * @see org.openmrs.module.dictionarysubscribing.api.DictionarySubscribingService#checkForUpdates()
 	 */
+	@Transactional
 	@Override
 	public void checkForUpdates() {
 		String groupUuid = Context.getAdministrationService().getGlobalProperty(
@@ -158,6 +159,7 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 			getMSS().getSubscriptionUpdater().checkForUpdates(importedPackage);
 	}
 	
+	@Transactional(readOnly = true)
 	@Override
 	public ImportedPackage getSubscribedDictionary() {
 		String groupUuid = Context.getAdministrationService().getGlobalProperty(
@@ -175,6 +177,7 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 	/**
 	 * @see org.openmrs.module.dictionarysubscribing.api.DictionarySubscribingService#unsubscribeFromDictionary(java.lang.String)
 	 */
+	@Transactional
 	@Override
 	public void unsubscribeFromDictionary(String subscriptionUrl) {
 		GlobalProperty groupUuid = Context.getAdministrationService().getGlobalPropertyObject(
@@ -262,6 +265,7 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 	/**
 	 * @see org.openmrs.module.dictionarysubscribing.api.DictionarySubscribingService#isDictionaryLocked()
 	 */
+	@Transactional(readOnly = true)
 	@Override
 	public boolean isDictionaryLocked() {
 		String locked = getAS().getGlobalProperty(OpenmrsConstants.GLOBAL_PROPERTY_CONCEPTS_LOCKED, "false");
@@ -295,6 +299,7 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 	/**
      * @see org.openmrs.module.dictionarysubscribing.api.DictionarySubscribingService#getConceptsCount()
      */
+	@Transactional(readOnly = true)
     @Override
     public Long getConceptsCount() {
 	    return dao.getConceptsCount();
