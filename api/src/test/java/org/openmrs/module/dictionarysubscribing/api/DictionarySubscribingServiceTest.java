@@ -45,11 +45,11 @@ public class DictionarySubscribingServiceTest extends BaseModuleContextSensitive
 	@Verifies(value = "should subscribe to the dictionary at the specified url", method = "subscribeToDictionary(String)")
 	public void subscribeToDictionary_shouldSubscribeToTheDictionaryAtTheSpecifiedUrl() throws Exception {
 		AdministrationService as = Context.getAdministrationService();
-		String groupUuid = as.getGlobalProperty(DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID);
+		String groupUuid = as.getGlobalProperty(DictionarySubscribingConstants.GP_PACKAGE_GROUP_UUID);
 		Assert.assertNull(groupUuid);
 		
 		Context.getService(DictionarySubscribingService.class).subscribeToDictionary(TEST_URL, 1);
-		groupUuid = as.getGlobalProperty(DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID);
+		groupUuid = as.getGlobalProperty(DictionarySubscribingConstants.GP_PACKAGE_GROUP_UUID);
 		Assert.assertNotNull(groupUuid);
 		ImportedPackage importedPackage = Context.getService(MetadataSharingService.class).getImportedPackageByGroup(
 		    groupUuid);
@@ -69,7 +69,7 @@ public class DictionarySubscribingServiceTest extends BaseModuleContextSensitive
 		DictionarySubscribingService dss = Context.getService(DictionarySubscribingService.class);
 		dss.subscribeToDictionary(TEST_URL, 1);
 		AdministrationService as = Context.getAdministrationService();
-		String groupUuid = as.getGlobalProperty(DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID);
+		String groupUuid = as.getGlobalProperty(DictionarySubscribingConstants.GP_PACKAGE_GROUP_UUID);
 		Assert.assertNotNull(groupUuid);
 		importPackagesCount++;
 		Assert.assertEquals(importPackagesCount, mss.getAllImportedPackages().size());
@@ -77,7 +77,7 @@ public class DictionarySubscribingServiceTest extends BaseModuleContextSensitive
 		dss.subscribeToDictionary(TEST_URL, 1);
 		//The uuid should have remained the same and no new import package created
 		Assert.assertTrue(groupUuid.equals(as
-		        .getGlobalProperty(DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID)));
+		        .getGlobalProperty(DictionarySubscribingConstants.GP_PACKAGE_GROUP_UUID)));
 		Assert.assertEquals(importPackagesCount, mss.getAllImportedPackages().size());
 	}
 	
@@ -88,12 +88,12 @@ public class DictionarySubscribingServiceTest extends BaseModuleContextSensitive
 	@Verifies(value = "should unsubscribe from the dictionary at the specified url", method = "unsubscribeFromDictionary(String)")
 	public void unsubscribeFromDictionary_shouldUnsubscribeFromTheDictionaryAtTheSpecifiedUrl() throws Exception {
 		AdministrationService as = Context.getAdministrationService();
-		String groupUuid = as.getGlobalProperty(DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID);
+		String groupUuid = as.getGlobalProperty(DictionarySubscribingConstants.GP_PACKAGE_GROUP_UUID);
 		Assert.assertNull(groupUuid);
 		
 		DictionarySubscribingService dss = Context.getService(DictionarySubscribingService.class);
 		dss.subscribeToDictionary(TEST_URL, 1);
-		groupUuid = as.getGlobalProperty(DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID);
+		groupUuid = as.getGlobalProperty(DictionarySubscribingConstants.GP_PACKAGE_GROUP_UUID);
 		Assert.assertNotNull(groupUuid);
 		MetadataSharingService mss = Context.getService(MetadataSharingService.class);
 		ImportedPackage importedPackage = mss.getImportedPackageByGroup(groupUuid);
@@ -101,9 +101,8 @@ public class DictionarySubscribingServiceTest extends BaseModuleContextSensitive
 		
 		dss.unsubscribeFromDictionary(TEST_URL);
 		importedPackage = mss.getImportedPackageByGroup(groupUuid);
-		Assert.assertNotNull(importedPackage);
-		Assert.assertTrue(SubscriptionStatus.DISABLED == importedPackage.getSubscriptionStatus());
-		Assert.assertEquals("", as.getGlobalProperty(DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID));
+		Assert.assertNull(importedPackage);
+		Assert.assertEquals("", as.getGlobalProperty(DictionarySubscribingConstants.GP_PACKAGE_GROUP_UUID));
 	}
 	
 	/**
@@ -113,12 +112,12 @@ public class DictionarySubscribingServiceTest extends BaseModuleContextSensitive
 	@Verifies(value = "should not unsubscribe from the dictionary it if has a different url", method = "unsubscribeFromDictionary(String)")
 	public void unsubscribeFromDictionary_shouldNotUnsubscribeFromTheDictionaryItIfHasADifferentUrl() throws Exception {
 		AdministrationService as = Context.getAdministrationService();
-		String oldGroupUuid = as.getGlobalProperty(DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID);
+		String oldGroupUuid = as.getGlobalProperty(DictionarySubscribingConstants.GP_PACKAGE_GROUP_UUID);
 		Assert.assertNull(oldGroupUuid);
 		
 		DictionarySubscribingService dss = Context.getService(DictionarySubscribingService.class);
 		dss.subscribeToDictionary(TEST_URL, 1);
-		oldGroupUuid = as.getGlobalProperty(DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID);
+		oldGroupUuid = as.getGlobalProperty(DictionarySubscribingConstants.GP_PACKAGE_GROUP_UUID);
 		Assert.assertNotNull(oldGroupUuid);
 		MetadataSharingService mss = Context.getService(MetadataSharingService.class);
 		ImportedPackage importedPackage = mss.getImportedPackageByGroup(oldGroupUuid);
@@ -128,6 +127,6 @@ public class DictionarySubscribingServiceTest extends BaseModuleContextSensitive
 		importedPackage = mss.getImportedPackageByGroup(oldGroupUuid);
 		Assert.assertFalse(SubscriptionStatus.DISABLED == importedPackage.getSubscriptionStatus());
 		Assert.assertEquals(oldGroupUuid,
-		    as.getGlobalProperty(DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID));
+		    as.getGlobalProperty(DictionarySubscribingConstants.GP_PACKAGE_GROUP_UUID));
 	}
 }

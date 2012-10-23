@@ -82,13 +82,13 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 	}
 	
 	/**
-	 * @see org.openmrs.module.dictionarysubscribing.api.DictionarySubscribingService#subscribeToDictionary(java.lang.String, int)
+	 * @see org.openmrs.module.dictionarysubscribing.api.DictionarySubscribingService#subscribeToDictionary(java.lang.String,
+	 *      int)
 	 */
 	@Transactional
 	@Override
 	public void subscribeToDictionary(String subscriptionUrl, int version) {
-		GlobalProperty groupUuid = getAS().getGlobalPropertyObject(
-		    DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID);
+		GlobalProperty groupUuid = getAS().getGlobalPropertyObject(DictionarySubscribingConstants.GP_PACKAGE_GROUP_UUID);
 		
 		if (groupUuid != null) {
 			ImportedPackage importedPackage = getMSS().getImportedPackageByGroup(groupUuid.getPropertyValue());
@@ -123,11 +123,10 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 		getMSS().saveImportedPackage(pack);
 		
 		//Save dictionary groupUuid
-		GlobalProperty groupUuidGP = getAS().getGlobalPropertyObject(
-		    DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID);
+		GlobalProperty groupUuidGP = getAS().getGlobalPropertyObject(DictionarySubscribingConstants.GP_PACKAGE_GROUP_UUID);
 		if (groupUuidGP == null) {
-			groupUuidGP = new GlobalProperty(DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID,
-			        pack.getGroupUuid(), "The group UUID of a dictionary package which you are currently subscribing");
+			groupUuidGP = new GlobalProperty(DictionarySubscribingConstants.GP_PACKAGE_GROUP_UUID, pack.getGroupUuid(),
+			        "The group UUID of a dictionary package which you are currently subscribing");
 		} else {
 			groupUuidGP.setPropertyValue(pack.getGroupUuid());
 		}
@@ -144,7 +143,7 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 	@Override
 	public void checkForUpdates() {
 		String groupUuid = Context.getAdministrationService().getGlobalProperty(
-		    DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID);
+		    DictionarySubscribingConstants.GP_PACKAGE_GROUP_UUID);
 		if (StringUtils.isBlank(groupUuid)) {
 			log.warn("There is no concept dictionary that you is currently subscribed");
 			return;
@@ -159,7 +158,7 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 	@Override
 	public ImportedPackage getSubscribedDictionary() {
 		String groupUuid = Context.getAdministrationService().getGlobalProperty(
-		    DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID);
+		    DictionarySubscribingConstants.GP_PACKAGE_GROUP_UUID);
 		if (StringUtils.isBlank(groupUuid)) {
 			log.warn("There is no concept dictionary that is currently subscribed");
 			return null;
@@ -177,7 +176,7 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 	@Override
 	public void unsubscribeFromDictionary(String subscriptionUrl) {
 		GlobalProperty groupUuid = Context.getAdministrationService().getGlobalPropertyObject(
-		    DictionarySubscribingConstants.GP_DICTIONARY_PACKAGE_GROUP_UUID);
+		    DictionarySubscribingConstants.GP_PACKAGE_GROUP_UUID);
 		
 		if (groupUuid != null) {
 			ImportedPackage importedPackage = getMSS().getImportedPackageByGroup(groupUuid.getPropertyValue());
@@ -217,7 +216,7 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 	}
 	
 	@Override
-    @Transactional
+	@Transactional
 	public void importPackage(ImportedPackage dictionary, URL packageContentUrl) {
 		//Preserve subscription URL
 		String subscriptionUrl = dictionary.getSubscriptionUrl();
@@ -274,7 +273,7 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 		GlobalProperty conceptsLocked = getAS().getGlobalPropertyObject(OpenmrsConstants.GLOBAL_PROPERTY_CONCEPTS_LOCKED);
 		if (conceptsLocked == null) {
 			conceptsLocked = new GlobalProperty(OpenmrsConstants.GLOBAL_PROPERTY_CONCEPTS_LOCKED, "false",
-			        "Disables modyfications to concept dictionary");
+			        "Enables modifications to concept dictionary");
 		} else {
 			conceptsLocked.setPropertyValue("false");
 		}
@@ -286,22 +285,22 @@ public class DictionarySubscribingServiceImpl extends BaseOpenmrsService impleme
 		GlobalProperty conceptsLocked = getAS().getGlobalPropertyObject(OpenmrsConstants.GLOBAL_PROPERTY_CONCEPTS_LOCKED);
 		if (conceptsLocked == null) {
 			conceptsLocked = new GlobalProperty(OpenmrsConstants.GLOBAL_PROPERTY_CONCEPTS_LOCKED, "true",
-			        "Disables modyfications to concept dictionary");
+			        "Disables modifications to concept dictionary");
 		} else {
 			conceptsLocked.setPropertyValue("true");
 		}
 		
 		getAS().saveGlobalProperty(conceptsLocked);
 	}
-
+	
 	/**
-     * @see org.openmrs.module.dictionarysubscribing.api.DictionarySubscribingService#getConceptsCount()
-     */
+	 * @see org.openmrs.module.dictionarysubscribing.api.DictionarySubscribingService#getConceptsCount()
+	 */
 	@Transactional(readOnly = true)
-    @Override
-    public Long getConceptsCount() {
-	    return dao.getConceptsCount();
-    }
+	@Override
+	public Long getConceptsCount() {
+		return dao.getConceptsCount();
+	}
 	
 	/**
 	 * A work-around which allows for transactional calls within this service.
